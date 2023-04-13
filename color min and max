@@ -1,0 +1,53 @@
+/*підсвічувати найбільше і найменше значення, але не враховувати останній місяць*/
+
+-- спочатку створимо міру
+Ga_session Months = 
+VAR ValueDisplay = CALCULATETABLE(
+    SUMMARIZE(
+        CALCULATETABLE('GA','Date'[Month]<>DATE(YEAR(today()-4), month(today()-4), 1))
+         ,'Date'[Month], "session", sum('GA'[sessions]))
+         , ALLSELECTED())
+VAR MinValue= MINX(ValueDisplay, [session])
+VAR MaxValue= MAXx(ValueDisplay, [session])
+VAR CarentValue=sum('GA'[sessions]) --можна замінити на вже існюючу міру, яка використоувується в звіті
+VAR result= 
+    SWITCH( True(), 
+    round(CarentValue,6)=round(MinValue,6) ,1, 
+    round(CarentValue,6)=round(MaxValue,6), 2)
+RETURN result
+
+--після цього в налаштуваннямх візулазіації вибриаємо правило базоване на цій мірі (Ga_session Months)
+--задаємо червоний колір, якщо значення =1 і зелений, якщо значення=2
+
+--для тиждня
+Ga_session week = 
+VAR ValueDisplay = CALCULATETABLE(
+    SUMMARIZE(
+        CALCULATETABLE(GA,'Date'[Week]<>(today()-4- WEEKDAY(today()-4,2)+1))
+         ,'Date'[Week], "session", sum('GA'[sessions]))
+         , ALLSELECTED())
+VAR MinValue= MINX(ValueDisplay, [session])
+VAR MaxValue= MAXx(ValueDisplay, [session])
+VAR CarentValue=sum('GA'[sessions])
+VAR result= 
+    SWITCH( True(), 
+    round(CarentValue,6)=round(MinValue,6) ,1, 
+    round(CarentValue,6)=round(MaxValue,6), 2)
+    
+-- для дня
+Ga_session day = 
+VAR ValueDisplay = CALCULATETABLE(
+    SUMMARIZE(
+        GA
+         ,'Date'[Date], "session", sum('GA'[sessions]))
+         , ALLSELECTED())
+VAR MinValue= MINX(ValueDisplay, [session])
+VAR MaxValue= MAXx(ValueDisplay, [session])
+VAR CarentValue=sum('GA'[sessions])
+VAR result= 
+    SWITCH( True(), 
+    round(CarentValue,6)=round(MinValue,6) ,1, 
+    round(CarentValue,6)=round(MaxValue,6), 2)
+RETURN result
+
+RETURN result
