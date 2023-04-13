@@ -1,0 +1,39 @@
+/*згрупувати дані в ТОП 10, а інше показувати в групі Other*/ 
+--потрібно стоврити таблицю (в нашому випадку TOP_10_counrty) де будуть унікальні значеня і Other
+
+
+
+Country TOP 10 = 
+VAR TOP_10_counrty =
+    SELECTCOLUMNS (
+        TOPN (
+            10,
+            SUMMARIZE (
+                Data,
+                Data[country],
+                "Number of ticket", DISTINCTCOUNT( Data[ticket_id] )
+            ),
+            [Number of ticket], DESC
+        ),
+        "country", Data[country]
+    )
+VAR TOP_10_value =            
+            CALCULATE (
+                DISTINCTCOUNT( Data[ticket_id] ),
+                Data[country] IN DISTINCT ( 'Top10_country'[country] )
+            )
+            
+VAR Other_value =    
+            DISTINCTCOUNT( Data[ticket_id] )
+             - CALCULATE ( DISTINCTCOUNT( Data[ticket_id] ), Data[country] IN TOP_10_counrty )
+
+
+VAR _value =
+    SWITCH (
+        TRUE (),
+        SELECTEDVALUE ( 'Top10_country'[country] ) = "Others", Other_value,
+        SELECTEDVALUE ( 'Top10_country'[country] ) IN TOP_10_counrty, TOP_10_value
+    ) 
+VAR numbers= IF ( ISINSCOPE ( 'Top10_country'[country] ), _value, DISTINCTCOUNT( Data[ticket_id] ) )
+RETURN if(numbers= 0, BLANK(), numbers)
+    
