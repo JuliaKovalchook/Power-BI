@@ -55,7 +55,7 @@ CALCULATE(
         VALUES(Data[country]),
         RANKX(
             ALLSELECTED(Data[country]),
-            CALCULATE(SUM(Data[sum_amount_usd]))
+            CALCULATE(SUM(Data[amount]))
         )=CounrtyRanK
     )
 )     
@@ -69,7 +69,7 @@ CALCULATE(
         VALUES(Data[country]),
         RANKX(
             ALLSELECTED(Data[country]),
-            CALCULATE(SUM(Data[max_amount_usd]))
+            CALCULATE(SUM(Data[amount]))
         )=1
     )
 )     
@@ -78,6 +78,8 @@ CALCULATE(
 /*згрупувати дані в ТОП 10, а інше показувати в групі Other*/ 
 
 --потрібно стоврити таблицю (в нашому випадку TOP_10_counrty) де будуть унікальні значеня і Other
+Top10_country = union(DISTINCT(Data[country]), Row("country", "Others"))
+
 
 Country TOP 10 = 
 VAR TOP_10_counrty =
