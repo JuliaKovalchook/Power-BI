@@ -1,7 +1,83 @@
+/* показувати в одому рядку таблиці TOP 3 країни*/
+
+TOP country = 
+VAR Top1 = 
+CALCULATE(
+    CONCATENATEX(VALUES(Data[country]),[country], ", "),
+    FILTER(
+        VALUES(Data[country]),
+        
+        RANKX(
+            ALLSELECTED(Data[country]),
+            CALCULATE(DISTINCTCOUNT(Data[ticket_id]))
+        )=1
+    )
+)
+VAR Top2 = 
+CALCULATE(
+    CONCATENATEX(VALUES(Data[country]),[country], ", "),
+    FILTER(
+        VALUES(Data[country]),
+        RANKX(
+            ALLSELECTED(Data[country]),
+            CALCULATE(DISTINCTCOUNT(Data[ticket_id]))
+        )=2
+    )
+)
+VAR Top3 = 
+CALCULATE(
+    CONCATENATEX(VALUES(Data[country]),[country], ", "),
+    FILTER(
+        VALUES(Data[country]),
+        RANKX(
+            ALLSELECTED(Data[country]),
+            CALCULATE(DISTINCTCOUNT(Data[ticket_id]))
+        )=3
+    )
+)
+RETURN 
+if (Top3<>BLANK(),  "["& Top1 & "; " & Top2 & "; " & Top3 & "]",
+  if (Top2<>BLANK(),  "["& Top1 & "; " & Top2 &  "]",
+        "["& Top1 &  "]"))
+
+
+-----------------------------------------------------------------------------------------------------------------
+/* стоврити матрицю де в рядкаг буде Ранг, а в значеннях значення цього рангу (топ 1, топ2 і т.д) 
+-- створити таблицю 
+Table_top3 = UNION(ROW("Rank", 1),ROW("Rank", 2),ROW("Rank", 3))
+
+TOP country = 
+VAR CounrtyRanK = SELECTEDVALUE('Table_top3'[Rank])
+RETURN
+CALCULATE(
+    CONCATENATEX(VALUES(Data[country]),[country]),
+    FILTER(
+        VALUES(Data[country]),
+        RANKX(
+            ALLSELECTED(Data[country]),
+            CALCULATE(SUM(Data[sum_amount_usd]))
+        )=CounrtyRanK
+    )
+)     
+
+
+/* повернути ТОП 1*/
+TOP countrys = 
+CALCULATE(
+    CONCATENATEX(VALUES(Data[country]),[country]),
+    FILTER(
+        VALUES(Data[country]),
+        RANKX(
+            ALLSELECTED(Data[country]),
+            CALCULATE(SUM(Data[max_amount_usd]))
+        )=1
+    )
+)     
+-----------------------------------------------------------------------------------------------------------------
+
 /*згрупувати дані в ТОП 10, а інше показувати в групі Other*/ 
+
 --потрібно стоврити таблицю (в нашому випадку TOP_10_counrty) де будуть унікальні значеня і Other
-
-
 
 Country TOP 10 = 
 VAR TOP_10_counrty =
